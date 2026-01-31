@@ -1,10 +1,10 @@
-# 🎯 Sistema de Recomendação de Carreira em Tecnologia
+# 🎯 Sistema de recomendação de carreira em tecnologia
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-green)
 ![Status](https://img.shields.io/badge/Status-Concluído-success)
 
-## 📊 Sobre o Projeto
+## 📊 Sobre o projeto
 Sistema completo de recomendação de carreiras em tecnologia desenvolvido em Python, que analisa habilidades do usuário e sugere os cargos mais compatíveis do mercado.
 
 ## ✨ Funcionalidades
@@ -29,7 +29,7 @@ Sistema completo de recomendação de carreiras em tecnologia desenvolvido em Py
 3. Cole o código do arquivo `sistema_recomendacao.py`
 4. Execute a célula e siga as instruções
 
-### Opção 2: Execução Local
+### Opção 2: Execução local
 ```bash
 # Clone o repositório
 git clone https://github.com/seu-usuario/sistema_recomendacao.git
