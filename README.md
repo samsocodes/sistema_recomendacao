@@ -15,13 +15,13 @@ Sistema completo de recomendação de carreiras em tecnologia desenvolvido em Py
 - ✅ **Exportação automática** de resultados (CSV/TXT)
 - ✅ **Plano de ação** personalizado
 
-## 🛠️ Tecnologias
+## Tecnologias
 - **Python 3** - Linguagem principal
 - **Pandas** - Análise e manipulação de dados
 - **Matplotlib/Seaborn** - Visualização de dados
 - **Google Colab** - Ambiente de desenvolvimento
 
-## 🚀 Como Usar
+## Como Usar
 
 ### Opção 1: Google Colab (Recomendado)
 1. Acesse [Google Colab](https://colab.research.google.com)
@@ -40,5 +40,17 @@ pip install pandas matplotlib seaborn
 # Execute o sistema
 python sistema_recomendacao.py
 ```
+## Exportação de resultados
+Arquivos gerados com sucesso:
+1. recomendacao_carreira.csv - Tabela completa com todos os resultados
+2. resumo_recomendacao.txt - Resumo da analise com recomendacoes
 
-## Este projeto foi desenvolvido a partir dos conhecimentos adquiridos na Imersão de Dados com Python II da empresa Alura.
+## Instruções de download no Google Colab:
+1. No menu esquerdo, clique no icone de pasta
+2. Clique no botao 'Atualizar'
+3. Localize os arquivos gerados
+4. Clique nos tres pontos ao lado de cada arquivo
+5. Selecione 'Download'
+
+
+Este projeto foi desenvolvido a partir dos conhecimentos adquiridos na Imersão de Dados com Python II da empresa Alura.
