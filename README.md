@@ -39,3 +39,6 @@ pip install pandas matplotlib seaborn
 
 # Execute o sistema
 python sistema_recomendacao.py
+```
+
+## Este projeto foi desenvolvido a partir dos conhecimentos adquiridos na Imersão de Dados com Python II da empresa Alura.
