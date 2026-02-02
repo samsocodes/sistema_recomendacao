@@ -25,11 +25,15 @@ O projeto analisa 81 cargos, considerando demanda por país, salários médios (
 
 🛠️ Tecnologias
 
-HTML — aplicação completa em um único arquivo
+- HTML — aplicação completa em um único arquivo
 
-Lógica de dados aplicada à recomendação de carreiras
+- Lógica de dados aplicada à recomendação de carreiras
 
-Frontend responsivo (sem dependências externas)
+- Frontend responsivo (sem dependências externas)
+
+- Pandas
+
+- Python
 
 ▶️ Como usar
 
@@ -40,6 +44,24 @@ Abra no navegador
 Insira suas habilidades, nível e localização
 
 Pronto — o sistema gera as recomendações automaticamente.
+
+🔄 Evolução do projeto
+
+O projeto teve início como um sistema de recomendação desenvolvido em Python, executado no Google Colab, com foco em análise de compatibilidade entre habilidades e cargos em tecnologia.
+
+Com o tempo, evoluiu para uma aplicação web completa, incorporando:
+
+- expansão de 12 para 81 cargos analisados
+
+- inclusão de demanda de mercado por país (Brasil e EUA)
+
+- adição de faixas salariais médias (2025)
+
+- geração de planos de ação personalizados
+
+- migração para HTML em um único arquivo, com interface responsiva
+
+Essa evolução permitiu aplicar análise de dados em um contexto mais próximo do uso real, transformando informações em direcionamento prático de carreira.
 
 
 Projeto inicialmente desenvolvido em Python durante a Imersão de Dados da Alura e posteriormente evoluído para uma versão web completa.
