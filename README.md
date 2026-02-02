@@ -1,17 +1,17 @@
-# 🎯 Sistema de recomendação de carreira em tecnologia
+# 📊 Sistema de recomendação de carreira em tecnologia em dashboard
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-green)
 ![Status](https://img.shields.io/badge/Status-Concluído-success)
 
-## 📊 Sobre o projeto
+## Sobre o projeto
 Sistema de recomendação de carreiras em tecnologia que cruza habilidades técnicas, nível profissional e localização (Brasil ou EUA) para indicar os cargos mais compatíveis do mercado.
 
 O projeto analisa 81 cargos, considerando demanda por país, salários médios (2025) e compatibilidade técnica, retornando recomendações práticas e orientadas a dados.
 
 🔗 Demo: https://samsocodes.github.io/sistema_recomendacao/
 
-✨ Funcionalidades
+## Funcionalidades
 
 ✅ Recomendação das 6 carreiras mais compatíveis
 
@@ -23,7 +23,7 @@ O projeto analisa 81 cargos, considerando demanda por país, salários médios (
 
 ✅ Interface simples e intuitiva
 
-🛠️ Tecnologias
+## Tecnologias
 
 - HTML — aplicação completa em um único arquivo
 
@@ -35,7 +35,7 @@ O projeto analisa 81 cargos, considerando demanda por país, salários médios (
 
 - Python
 
-▶️ Como usar
+## ▶️ Como usar
 
 Abra o link da demo ou baixe o arquivo HTML
 
@@ -45,7 +45,7 @@ Insira suas habilidades, nível e localização
 
 Pronto — o sistema gera as recomendações automaticamente.
 
-🔄 Evolução do projeto
+## 🔄 Evolução do projeto
 
 O projeto teve início como um sistema de recomendação desenvolvido em Python, executado no Google Colab, com foco em análise de compatibilidade entre habilidades e cargos em tecnologia.
 
@@ -62,6 +62,7 @@ Com o tempo, evoluiu para uma aplicação web completa, incorporando:
 - migração para HTML em um único arquivo, com interface responsiva
 
 Essa evolução permitiu aplicar análise de dados em um contexto mais próximo do uso real, transformando informações em direcionamento prático de carreira.
+
 
 
 Projeto inicialmente desenvolvido em Python durante a Imersão de Dados da Alura e posteriormente evoluído para uma versão web completa.
