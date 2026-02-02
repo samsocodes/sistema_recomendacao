@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Recomendação de Carreira</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #e63946;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --warning-light: #f0ad4e;
+            --demanda-muito-alta: #e63946;
+            --demanda-alta: #f8961e;
+            --demanda-media: #4cc9f0;
+            --demanda-moderada: #6c757d;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .logo p {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* WARNING BANNER */
+        .warning-banner {
+            background: rgba(240, 173, 78, 0.1);
+            border: 1px solid rgba(240, 173, 78, 0.3);
+            border-radius: var(--radius);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            color: #856404;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .warning-banner i {
+            color: var(--warning-light);
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .warning-banner strong {
+            font-weight: 600;
+        }
+
+        /* MAIN LAYOUT */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* LEFT PANEL - PERFIL */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 i {
+            color: var(--accent);
+        }
+
+        /* FORM STYLES */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .form-control.small {
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+        .textarea-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        /* LEVEL SELECTION */
+        .level-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .level-option {
+            padding: 15px 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+        }
+
+        .level-option:hover {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .level-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .level-option .level-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .level-option .level-years {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: var(--dark);
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        /* QUICK EXAMPLES */
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .example-card {
+            padding: 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+        }
+
+        .example-card:hover {
+            border-color: var(--success);
+            background-color: rgba(76, 201, 240, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .example-card h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .example-card p {
+            font-size: 13px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        /* RIGHT PANEL - RESULTS */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* RESULTS HEADER */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .results-title h2 {
+            font-size: 24px;
+            color: var(--dark);
+        }
+
+        .results-title p {
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .results-filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* DEMANDA BADGE */
+        .demanda-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demanda-muito-alta {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: var(--demanda-muito-alta);
+            border: 1px solid rgba(230, 57, 70, 0.2);
+        }
+
+        .demanda-alta {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--demanda-alta);
+            border: 1px solid rgba(248, 150, 30, 0.2);
+        }
+
+        .demanda-media {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--demanda-media);
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+
+        .demanda-moderada {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--demanda-moderada);
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        /* SALARY TOOLTIP */
+        .salary-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dashed var(--gray);
+        }
+
+        .salary-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 280px;
+            background-color: #333;
+            color: white;
+            text-align: left;
+            border-radius: 6px;
+            padding: 15px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 13px;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .salary-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .salary-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* RESULTS GRID */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card.highlight {
+            border-top-color: var(--accent);
+            box-shadow: 0 8px 25px rgba(248, 37, 133, 0.15);
+        }
+
+        .result-rank {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .result-card.highlight .result-rank {
+            background: var(--accent);
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .result-compatibility {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .result-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .stat-badge i {
+            color: var(--primary);
+        }
+
+        .demanda-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            cursor: help;
+        }
+
+        .result-description {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .result-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .skill-tag {
+            padding: 5px 12px;
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* CHARTS CONTAINER */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            height: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card h3 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chart-header h3 {
+            margin-bottom: 0;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        /* ACTION PLAN */
+        .action-plan-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 900px) {
+            .action-plan-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .focus-card {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(58, 12, 163, 0.05) 100%);
+            border-left: 4px solid var(--primary);
+            padding: 25px;
+            border-radius: var(--radius);
+        }
+
+        .focus-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .skills-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: var(--radius);
+            padding: 25px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .current-skills, .to-learn-skills {
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .current-skills {
+            background: rgba(76, 201, 240, 0.1);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+
+        .to-learn-skills {
+            background: rgba(248, 150, 30, 0.1);
+            border: 1px solid rgba(248, 150, 30, 0.3);
+        }
+
+        .skills-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .skills-list li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid var(--success);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .to-learn-skills .skills-list li {
+            border-left-color: var(--warning);
+        }
+
+        .skill-priority {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background: rgba(248, 150, 30, 0.1);
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .next-steps-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(248, 37, 133, 0.05) 0%, rgba(247, 37, 133, 0.1) 100%);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .next-steps-card h3 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .steps-timeline {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-top: 3px solid var(--accent);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .step h4 {
+            font-size: 16px;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        /* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(67, 97, 238, 0.1);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .level-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card {
+                height: 380px;
+            }
+            
+            .results-filters {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .steps-timeline {
+                flex-direction: column;
+            }
+            
+            .step {
+                min-width: 100%;
+            }
+
+            .salary-tooltip .tooltip-text {
+                width: 250px;
+                left: 0;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-card {
+                height: 350px;
+            }
+            
+            .chart-wrapper {
+                height: 250px;
+            }
+        }
+
+        /* FOOTER */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--gray);
+            font-size: 14px;
+            padding: 20px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid var(--warning-light);
+        }
+
+        /* UTILITY */
+        .hidden {
+            display: none;
+        }
+
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .mt-30 { margin-top: 30px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <div>
+                    <h1>Dashboard de Recomendação</h1>
+                    <p>Bem-vindo ao Recomendador de Carreira em Tecnologia</p>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalJobs">81</div>
+                    <div class="stat-label">Cargos Analisados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avgSalary">R$ 13.200</div>
+                    <div class="stat-label">Salário Médio</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="highDemand">0%</div>
+                    <div class="stat-label">Alta Demanda</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- WARNING BANNER -->
+        <div class="warning-banner">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>Aviso importante:</strong> Os valores apresentados são médias de mercado para 2025 e podem variar significativamente conforme: 
+                <strong>empresa contratante</strong>, <strong>localização geográfica</strong>, 
+                <strong>modelo de contratação</strong> (CLT, PJ, contrato internacional) e 
+                <strong>pacote de benefícios</strong>.
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- LEFT PANEL - FORM -->
+            <div class="left-panel">
+                <!-- PERFIL SECTION -->
+                <div class="card">
+                    <h2><i class="fas fa-user-circle"></i> Seu Perfil</h2>
+                    
+                    <div class="form-group">
+                        <label for="skills"><i class="fas fa-code"></i> Habilidades Técnicas</label>
+                        <textarea 
+                            id="skills" 
+                            class="form-control textarea-control" 
+                            placeholder="Ex: python, sql, javascript, react, aws, docker, security, compliance"
+                            rows="4"
+                        >python, sql, javascript</textarea>
+                        <span class="form-hint">Separe suas habilidades por vírgula</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-chart-bar"></i> Nível de Experiência</label>
+                        <div class="level-options">
+                            <div class="level-option selected" data-level="Junior">
+                                <div class="level-name">Júnior</div>
+                                <div class="level-years">0-2 anos</div>
+                            </div>
+                            <div class="level-option" data-level="Pleno">
+                                <div class="level-name">Pleno</div>
+                                <div class="level-years">2-5 anos</div>
+                            </div>
+                            <div class="level-option" data-level="Senior">
+                                <div class="level-name">Sênior</div>
+                                <div class="level-years">5+ anos</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location"><i class="fas fa-map-marker-alt"></i> Localização</label>
+                        <select id="location" class="form-control">
+                            <option value="Brasil">Brasil (R$)</option>
+                            <option value="EUA">Estados Unidos (US$)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="analyzeBtn" class="btn btn-primary mt-20">
+                        <i class="fas fa-chart-pie"></i> Analisar Carreiras
+                    </button>
+                </div>
+                
+                <!-- EXEMPLOS RÁPIDOS -->
+                <div class="card">
+                    <h2><i class="fas fa-bolt"></i> Exemplos Rápidos</h2>
+                    <p class="form-hint">Clique em um perfil para testar rapidamente:</p>
+                    
+                    <div class="examples-grid">
+                        <div class="example-card" data-example="cybersecurity">
+                            <h4>Cybersecurity</h4>
+                            <p>linux, python, network security, siem, soc, incident response</p>
+                        </div>
+                        <div class="example-card" data-example="data-science">
+                            <h4>Data Science</h4>
+                            <p>python, sql, machine learning, estatística, pandas, numpy</p>
+                        </div>
+                        <div class="example-card" data-example="frontend">
+                            <h4>Frontend</h4>
+                            <p>javascript, react, css, html, typescript, redux</p>
+                        </div>
+                        <div class="example-card" data-example="devops">
+                            <h4>DevOps</h4>
+                            <p>docker, kubernetes, aws, linux, terraform, ci/cd</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DICAS -->
+                <div class="card">
+                    <h2><i class="fas fa-lightbulb"></i> Dicas para Melhorar</h2>
+                    <ul style="padding-left: 20px; color: var(--gray); line-height: 1.8;">
+                        <li>Inclua habilidades específicas da área de interesse</li>
+                        <li>Adicione tecnologias que você tem experiência real</li>
+                        <li>Mencione certificações relevantes</li>
+                        <li>Atualize suas habilidades regularmente</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- RIGHT PANEL - RESULTS -->
+            <div class="right-panel">
+                <!-- RESULTS HEADER -->
+                <div class="card">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <h2>Resultados da Análise</h2>
+                            <p>Comparação com +81 cargos do mercado de tecnologia</p>
+                        </div>
+                        <div class="results-filters">
+                            <select id="sortBy" class="filter-select">
+                                <option value="compatibility">Ordenar por Compatibilidade</option>
+                                <option value="salary">Ordenar por Salário</option>
+                                <option value="demand">Ordenar por Demanda</option>
+                            </select>
+                            <select id="filterExp" class="filter-select">
+                                <option value="all">Todos os níveis</option>
+                                <option value="Junior">Apenas Júnior</option>
+                                <option value="Pleno">Apenas Pleno</option>
+                                <option value="Senior">Apenas Sênior</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LOADING -->
+                <div class="card loading" id="loadingResults">
+                    <div class="spinner"></div>
+                    <h3>Analisando seu perfil...</h3>
+                    <p>Comparando suas habilidades com 81 cargos do mercado</p>
+                </div>
+                
+                <!-- RESULTS GRID -->
+                <div class="results-grid" id="resultsContainer">
+                    <!-- Os resultados aparecerão aqui via JavaScript -->
+                </div>
+                
+                <!-- CHARTS -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-radar"></i> Compatibilidade por Cargo</h3>
+                            <select id="chartType1" class="filter-select small">
+                                <option value="bar">Gráfico de Barras</option>
+                                <option value="radar">Gráfico de Radar</option>
+                                <option value="polarArea">Gráfico Polar</option>
+                            </select>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="compatibilityChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-pie"></i> Distribuição Salarial</h3>
+                            <select id="chartType2" class="filter-select small">
+                                <option value="bar">Gráfico de Barras</option>
+                                <option value="pie">Gráfico de Pizza</option>
+                                <option value="doughnut">Gráfico de Rosca</option>
+                            </select>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="salaryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PLANO DE AÇÃO -->
+                <div class="card">
+                    <h2><i class="fas fa-road"></i> Plano de Ação Personalizado</h2>
+                    <div id="actionPlan">
+                        <p style="color: var(--gray); text-align: center; padding: 30px;">
+                            Execute a análise para ver seu plano de ação personalizado
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer>
+            <p>Análise em tempo real • Dados de mercado atualizados</p>
+            <div class="disclaimer">
+                <strong>Fonte dos dados:</strong> Pesquisas de mercado 2025 (Robert Half, Glassdoor, LinkedIn Salary Guide, Kaggle, etc.)<br>
+                <strong>Limitações:</strong> Variações ocorrem por diferenças regionais, políticas específicas de cada empresa, nível exato de experiência e especialização, negociação individual e momento de contratação.<br>
+                <strong>Recomendação:</strong> Use como referência para planejamento de carreira, não como garantia salarial.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ====================================================
+        // BASE DE DADOS COMPLETA COM 81 CARGOS (ATUALIZADA)
+        // ====================================================
+        const cargos = [
+            // 🎯 DESENVOLVIMENTO FRONTEND
+            {
+                nome: "Frontend Developer Junior",
+                habilidades: ["html", "css", "javascript", "git", "responsive design", "react", "vue", "angular", "typescript básico"],
+                salarioBR: 6600,
+                salarioUS: 81250,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Desenvolve interfaces web responsivas e acessíveis com supervisão"
+            },
+            {
+                nome: "Frontend Developer Pleno",
+                habilidades: ["typescript", "react", "vue", "angular", "jest", "cypress", "webpack", "sass", "redux", "next.js", "performance"],
+                salarioBR: 12600,
+                salarioUS: 120000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Desenvolve aplicações web complexas com foco em performance e escalabilidade"
+            },
+            {
+                nome: "Frontend Developer Senior",
+                habilidades: ["architecture", "micro-frontends", "pwa", "performance", "ci/cd", "leadership", "mentoring", "code review", "system design"],
+                salarioBR: 20950,
+                salarioUS: 170750,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera arquitetura frontend, estratégias de desenvolvimento e mentoria de equipes"
+            },
+            
+            // ⚙️ DESENVOLVIMENTO BACKEND
+            {
+                nome: "Backend Developer Junior",
+                habilidades: ["python", "java", "node.js", "sql", "rest api", "git", "docker básico", "algoritmos"],
+                salarioBR: 4850,
+                salarioUS: 60000,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Desenvolve APIs e lógica de servidor básica com supervisão"
+            },
+            {
+                nome: "Backend Developer Pleno",
+                habilidades: ["microservices", "graphql", "mongodb", "postgresql", "redis", "kafka", "rabbitmq", "aws", "docker", "testes", "ci/cd"],
+                salarioBR: 9000,
+                salarioUS: 110000,
+                experiencia: "Pleno",
+                demandaBR: "Muito Alta",
+                demandaUS: "Alta",
+                scoreBR: 4,
+                scoreUS: 3,
+                descricao: "Projeta e desenvolve sistemas backend escaláveis e resilientes"
+            },
+            {
+                nome: "Backend Developer Senior",
+                habilidades: ["system design", "scalability", "security", "oauth", "jwt", "cloud architecture", "team leadership", "mentoring", "performance optimization"],
+                salarioBR: 14400,
+                salarioUS: 145000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Arquiteta sistemas backend complexos, lidera equipes e define padrões técnicos"
+            },
+            
+            // 🔄 FULL STACK
+            {
+                nome: "Full Stack Developer Junior",
+                habilidades: ["html", "css", "javascript", "python", "sql", "git", "rest api", "react básico", "node.js básico"],
+                salarioBR: 6000,
+                salarioUS: 81250,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Desenvolve funcionalidades completas do frontend ao backend com supervisão"
+            },
+            {
+                nome: "Full Stack Developer Pleno",
+                habilidades: ["react", "node.js", "postgresql", "docker", "aws", "rest api", "graphql", "typescript", "ci/cd", "testes"],
+                salarioBR: 12700,
+                salarioUS: 125000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Desenvolve aplicações completas do frontend ao backend com arquitetura definida"
+            },
+            {
+                nome: "Full Stack Developer Senior",
+                habilidades: ["end-to-end architecture", "performance", "security", "devops", "team leadership", "mentoring", "system design", "microservices"],
+                salarioBR: 20950,
+                salarioUS: 170750,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera desenvolvimento full stack, arquiteta soluções completas e mentora equipes"
+            },
+            
+            // 📱 DESENVOLVIMENTO MOBILE
+            {
+                nome: "Mobile Developer Junior",
+                habilidades: ["javascript", "react native", "flutter", "android básico", "ios básico", "git", "rest api", "ui básico"],
+                salarioBR: 6000,
+                salarioUS: 81250,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Desenvolve aplicativos móveis com frameworks cross-platform com supervisão"
+            },
+            {
+                nome: "Mobile Developer Pleno",
+                habilidades: ["react native", "flutter", "swift", "kotlin", "android", "ios", "ci/cd mobile", "testes", "performance", "app store"],
+                salarioBR: 11950,
+                salarioUS: 117500,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Desenvolve aplicativos móveis nativos e cross-platform com foco em performance"
+            },
+            {
+                nome: "Mobile Developer Senior",
+                habilidades: ["native development", "architecture", "performance optimization", "team leadership", "mentoring", "app store optimization", "ci/cd pipelines"],
+                salarioBR: 17350,
+                salarioUS: 165000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera desenvolvimento mobile, arquiteta soluções complexas e otimiza performance"
+            },
+            
+            // 📊 DATA ANALYST
+            {
+                nome: "Data Analyst Junior",
+                habilidades: ["sql", "excel", "power bi", "tableau", "python básico", "pandas básico", "estatística básica", "storytelling"],
+                salarioBR: 6300,
+                salarioUS: 75250,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Analisa dados para gerar relatórios e insights básicos de negócio"
+            },
+            {
+                nome: "Data Analyst Pleno",
+                habilidades: ["sql avançado", "python", "pandas", "power bi", "tableau", "etl", "estatística", "dashboard", "storytelling", "kpis"],
+                salarioBR: 10500,
+                salarioUS: 105000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Transforma dados complexos em insights acionáveis e dashboards estratégicos"
+            },
+            {
+                nome: "Data Analyst Senior",
+                habilidades: ["python avançado", "machine learning básico", "data governance", "team leadership", "mentoring", "strategy", "business intelligence"],
+                salarioBR: 17050,
+                salarioUS: 150250,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera estratégia de análise de dados, mentoria de equipes e governança de dados"
+            },
+            
+            // 🤖 DATA SCIENTIST
+            {
+                nome: "Data Scientist Junior",
+                habilidades: ["python", "sql", "pandas", "numpy", "scikit-learn", "estatística", "jupyter", "machine learning básico"],
+                salarioBR: 7650,
+                salarioUS: 90000,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Aplica algoritmos básicos de machine learning para análise preditiva"
+            },
+            {
+                nome: "Data Scientist Pleno",
+                habilidades: ["python avançado", "machine learning", "deep learning", "sql", "spark", "etl", "model deployment", "ab testing", "feature engineering"],
+                salarioBR: 13000,
+                salarioUS: 130000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Desenvolve e implanta modelos preditivos complexos para problemas de negócio"
+            },
+            {
+                nome: "Data Scientist Senior",
+                habilidades: ["deep learning avançado", "mlops", "team leadership", "mentoring", "research", "production pipelines", "strategy", "architecture"],
+                salarioBR: 21450,
+                salarioUS: 175750,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera projetos de machine learning, pesquisa e estratégia de IA na organização"
+            },
+            
+            // 🏗️ DATA ENGINEER
+            {
+                nome: "Data Engineer Junior",
+                habilidades: ["sql", "python", "etl básico", "airflow básico", "git", "docker básico", "data pipelines básico"],
+                salarioBR: 7700,
+                salarioUS: 95250,
+                experiencia: "Junior",
+                experienciaMinima: "Pleno",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Auxilia na construção e manutenção de pipelines de dados básicos"
+            },
+            {
+                nome: "Data Engineer Pleno",
+                habilidades: ["python", "sql", "spark", "airflow", "etl", "aws", "azure", "bigquery", "data pipelines", "data modeling", "data quality"],
+                salarioBR: 14000,
+                salarioUS: 135000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Constrói e mantém pipelines de dados escaláveis em ambientes de produção"
+            },
+            {
+                nome: "Data Engineer Senior",
+                habilidades: ["spark avançado", "data architecture", "data governance", "team leadership", "mentoring", "real-time processing", "data lake", "data warehouse"],
+                salarioBR: 23650,
+                salarioUS: 180250,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Arquiteta soluções de dados em larga escala e lidera equipes de engenharia de dados"
+            },
+            
+            // 🧠 ML ENGINEER
+            {
+                nome: "ML Engineer Junior",
+                habilidades: ["python", "scikit-learn", "pandas", "numpy", "sql", "git", "docker básico", "mlops básico"],
+                salarioBR: 9650,
+                salarioUS: 112500,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Implementa e ajusta modelos de machine learning sob supervisão"
+            },
+            {
+                nome: "ML Engineer Pleno",
+                habilidades: ["python", "tensorflow", "pytorch", "mlops", "docker", "kubernetes", "aws sagemaker", "model deployment", "feature store", "model monitoring"],
+                salarioBR: 14000,
+                salarioUS: 135000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Desenvolve, deploya e monitora modelos de machine learning em produção"
+            },
+            {
+                nome: "ML Engineer Senior",
+                habilidades: ["end-to-end ml pipelines", "real-time inference", "distributed training", "research to production", "team leadership", "mentoring", "ml architecture"],
+                salarioBR: 26950,
+                salarioUS: 195000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera implementação de sistemas de machine learning em escala e estratégia de ML"
+            },
+            
+            // ☁️ DEVOPS ENGINEER
+            {
+                nome: "DevOps Engineer Junior",
+                habilidades: ["linux", "git", "docker", "aws básico", "ci/cd básico", "bash", "monitoring básico", "networking básico"],
+                salarioBR: 8600,
+                salarioUS: 100250,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Auxilia na automação de processos de deployment e monitoramento básico"
+            },
+            {
+                nome: "DevOps Engineer Pleno",
+                habilidades: ["docker", "kubernetes", "aws", "azure", "terraform", "ansible", "jenkins", "ci/cd", "linux", "monitoring", "security básico"],
+                salarioBR: 14500,
+                salarioUS: 140000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Projeta e implementa pipelines de CI/CD e infraestrutura como código"
+            },
+            {
+                nome: "DevOps Engineer Senior",
+                habilidades: ["cloud architecture", "devsecops", "multi-cloud", "disaster recovery", "cost optimization", "team leadership", "mentoring", "sre"],
+                salarioBR: 24200,
+                salarioUS: 190250,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Arquiteta estratégias de DevOps, lidera transformação e garante confiabilidade"
+            },
+            
+            // ☁️ CLOUD ENGINEER
+            {
+                nome: "Cloud Engineer Junior",
+                habilidades: ["aws básico", "azure básico", "docker", "linux", "networking básico", "security básico", "terraform básico"],
+                salarioBR: 10400,
+                salarioUS: 104000,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Auxilia na configuração e manutenção de recursos na nuvem"
+            },
+            {
+                nome: "Cloud Engineer Pleno",
+                habilidades: ["aws", "azure", "gcp", "docker", "kubernetes", "terraform", "networking", "cloud security", "iac", "cost optimization"],
+                salarioBR: 13000,
+                salarioUS: 130000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Projeta, implementa e otimiza infraestrutura na nuvem para aplicações escaláveis"
+            },
+            {
+                nome: "Cloud Engineer Senior",
+                habilidades: ["cloud architecture", "multi-cloud strategy", "migration", "disaster recovery", "team leadership", "mentoring", "security", "compliance"],
+                salarioBR: 22550,
+                salarioUS: 176000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Arquiteta soluções cloud complexas, lidera migrações e estratégia multi-cloud"
+            },
+            
+            // 🔧 SRE (SITE RELIABILITY ENGINEER)
+            {
+                nome: "SRE Junior",
+                habilidades: ["linux", "monitoring", "alerting", "docker", "kubernetes básico", "python básico", "bash", "incident response básico"],
+                salarioBR: 11250,
+                salarioUS: 115000,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Auxilia no monitoramento, alerting e resposta a incidentes de sistemas"
+            },
+            {
+                nome: "SRE Pleno",
+                habilidades: ["go", "python", "docker", "kubernetes", "prometheus", "grafana", "incident management", "capacity planning", "chaos engineering", "automation"],
+                salarioBR: 17000,
+                salarioUS: 140000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Projeta e implementa sistemas para alta disponibilidade e confiabilidade"
+            },
+            {
+                nome: "SRE Senior",
+                habilidades: ["systems architecture", "reliability engineering", "team leadership", "mentoring", "disaster recovery", "performance", "scalability", "strategic planning"],
+                salarioBR: 30250,
+                salarioUS: 195000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera estratégia de confiabilidade, arquitetura de sistemas críticos e SLOs/SLIs"
+            },
+            
+            // 🔒 SEGURANÇA
+            {
+                nome: "Security Analyst / SOC Junior",
+                habilidades: ["siem", "splunk básico", "qradar básico", "incident response básico", "network security básico", "log analysis", "threat detection básico"],
+                salarioBR: 7000,
+                salarioUS: 82500,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Monitora alertas de segurança e auxilia na resposta a incidentes básicos"
+            },
+            {
+                nome: "Security Analyst / SOC Pleno",
+                habilidades: ["siem", "splunk", "qradar", "ids/ips", "threat hunting", "incident response", "forensics básico", "python", "scripting", "malware analysis básico"],
+                salarioBR: 12000,
+                salarioUS: 125000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Realiza caça a ameaças, análise forense e resposta a incidentes complexos"
+            },
+            {
+                nome: "Security Engineer Junior",
+                habilidades: ["network security básico", "firewall básico", "linux", "python básico", "security tools básico", "vulnerability scanning"],
+                salarioBR: 8500,
+                salarioUS: 95000,
+                experiencia: "Junior",
+                demandaBR: "Média",
+                demandaUS: "Média",
+                scoreBR: 2,
+                scoreUS: 2,
+                descricao: "Auxilia na implementação de controles de segurança básicos"
+            },
+            {
+                nome: "Security Engineer Pleno",
+                habilidades: ["network security", "firewall", "ids/ips", "zero trust", "iam", "cloud security", "linux", "python", "automation", "security tools"],
+                salarioBR: 17000,
+                salarioUS: 145000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Projeta e implementa controles de segurança em infraestrutura e aplicações"
+            },
+            {
+                nome: "Security Engineer Senior",
+                habilidades: ["security architecture", "devsecops", "cloud security", "team leadership", "mentoring", "cryptography", "pentesting", "security strategy"],
+                salarioBR: 28600,
+                salarioUS: 195000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Arquiteta soluções de segurança, lidera implementação e estratégia de segurança"
+            },
+            {
+                nome: "GRC Analyst Senior",
+                habilidades: ["nist", "iso 27001", "gdpr", "lgpd", "compliance", "risk assessment", "audit", "policy development", "security frameworks", "documentation"],
+                salarioBR: 14000,
+                salarioUS: 135000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Gerencia governança, risco e conformidade de segurança na organização"
+            },
+            {
+                nome: "CISO",
+                habilidades: ["strategic planning", "budget management", "team leadership", "executive communication", "compliance", "risk management", "vendor management", "security strategy"],
+                salarioBR: 35000,
+                salarioUS: 230000,
+                experiencia: "Senior",
+                demandaBR: "Moderada",
+                demandaUS: "Alta",
+                scoreBR: 1,
+                scoreUS: 3,
+                descricao: "Lidera estratégia de segurança corporativa, gerencia orçamento e equipes"
+            },
+            
+            // 🎨 UX/UI DESIGNER
+            {
+                nome: "UX/UI Designer Junior",
+                habilidades: ["figma", "adobe xd", "wireframing", "prototyping básico", "user research básico", "design principles", "ui design"],
+                salarioBR: 5400,
+                salarioUS: 70000,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Cria interfaces e protótipos básicos com supervisão de designers seniores"
+            },
+            {
+                nome: "UX/UI Designer Pleno",
+                habilidades: ["figma", "adobe xd", "sketch", "prototyping", "user research", "usability testing", "design systems", "accessibility", "ui/ux"],
+                salarioBR: 9500,
+                salarioUS: 100000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Projeta experiências do usuário intuitivas e sistemas de design escaláveis"
+            },
+            {
+                nome: "UX/UI Designer Senior",
+                habilidades: ["design leadership", "design strategy", "team management", "mentoring", "design systems", "product thinking", "user research", "accessibility"],
+                salarioBR: 15950,
+                salarioUS: 145750,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera estratégia de design, equipes de design e pensamento de produto"
+            },
+            
+            // 💼 PRODUCT OWNER
+            {
+                nome: "Product Owner Junior",
+                habilidades: ["agile", "scrum", "user stories", "backlog management", "jira", "trello", "data analysis básico", "stakeholder communication", "requirements gathering"],
+                salarioBR: 8300,
+                salarioUS: 95000,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Gerencia backlog e user stories de produto/squad específico, trabalhando sob orientação de PO/PM sênior"
+            },
+            {
+                nome: "Product Owner Pleno",
+                habilidades: ["agile frameworks", "roadmap planning", "user research básico", "metrics & kpis", "prioritization frameworks", "a/b testing concepts", "cross-functional collaboration", "stakeholder management"],
+                salarioBR: 12500,
+                salarioUS: 125000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera produto/squad completo, definindo roadmap trimestral e priorizando backlog baseado em dados e feedback"
+            },
+            {
+                nome: "Product Owner Senior",
+                habilidades: ["product strategy", "business metrics", "market research", "competitive analysis", "product discovery", "experimentation culture", "go-to-market planning", "executive communication", "team mentoring"],
+                salarioBR: 20100,
+                salarioUS: 167500,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Define estratégia de produto, lidera múltiplos squads e influencia direção da área, mentora times e comunica com stakeholders executivos"
+            },
+            
+            // 💼 PRODUCT MANAGER
+            {
+                nome: "Product Manager Junior",
+                habilidades: ["agile", "scrum", "user stories", "backlog management", "data analysis básico", "stakeholder communication", "market research básico"],
+                salarioBR: 8850,
+                salarioUS: 101250,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Gerencia backlog e funcionalidades específicas com supervisão"
+            },
+            {
+                nome: "Product Manager Pleno",
+                habilidades: ["product strategy", "roadmap planning", "data analysis", "market research", "user research", "metrics", "cross-functional leadership", "agile"],
+                salarioBR: 13000,
+                salarioUS: 125000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Define estratégia de produto, roadmap e lidera desenvolvimento de produtos"
+            },
+            {
+                nome: "Product Manager Senior",
+                habilidades: ["product vision", "business strategy", "team building", "executive communication", "portfolio management", "innovation", "market leadership"],
+                salarioBR: 24750,
+                salarioUS: 181500,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Define visão de produto, estratégia de negócio e lidera portfólio de produtos"
+            },
+            
+            // 🏗️ TECH LEAD
+            {
+                nome: "Tech Lead Pleno",
+                habilidades: ["architecture", "code reviews", "mentoring", "technical leadership", "system design", "project planning", "technical decision making"],
+                salarioBR: 17000,
+                salarioUS: 145000,
+                experiencia: "Pleno",
+                experienciaMinima: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera equipe técnica, toma decisões arquiteturais e garante qualidade de código"
+            },
+            {
+                nome: "Tech Lead Senior",
+                habilidades: ["technical strategy", "team leadership", "architecture", "mentoring", "innovation", "cross-team collaboration", "engineering culture"],
+                salarioBR: 28050,
+                salarioUS: 203500,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Define estratégia técnica, lidera múltiplas equipes e cultura de engenharia"
+            },
+            
+            // 🏢 ENGINEERING MANAGER
+            {
+                nome: "Engineering Manager",
+                habilidades: ["people management", "hiring", "career development", "budget planning", "technical strategy", "team building", "performance management"],
+                salarioBR: 20000,
+                salarioUS: 155000,
+                experiencia: "Pleno",
+                experienciaMinima: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Gerencia equipe de engenharia, desenvolvimento de carreira e processos"
+            },
+            {
+                nome: "Senior Engineering Manager",
+                habilidades: ["multiple teams management", "organizational design", "strategic planning", "executive leadership", "budget management", "culture building"],
+                salarioBR: 34100,
+                salarioUS: 215000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera múltiplas equipes de engenharia, define estratégia organizacional e orçamento"
+            },
+            
+            // 🏗️ SOLUTIONS ARCHITECT
+            {
+                nome: "Solutions Architect Pleno",
+                habilidades: ["technical sales", "customer presentations", "solution design", "aws", "azure", "architecture", "documentation", "proof of concept"],
+                salarioBR: 18000,
+                salarioUS: 140000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Projeta soluções técnicas para clientes e apoia vendas complexas"
+            },
+            {
+                nome: "Solutions Architect Senior",
+                habilidades: ["enterprise architecture", "strategic consulting", "team leadership", "customer relationships", "complex solutions", "industry expertise"],
+                salarioBR: 33000,
+                salarioUS: 205000,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Muito Alta",
+                scoreBR: 3,
+                scoreUS: 4,
+                descricao: "Lidera arquitetura de soluções empresariais complexas e consultoria estratégica"
+            },
+            
+            // 🧪 QA ENGINEER
+            {
+                nome: "QA Engineer Junior",
+                habilidades: ["manual testing", "test cases", "bug tracking", "jira", "agile", "test documentation", "basic automation"],
+                salarioBR: 6300,
+                salarioUS: 78500,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Executa testes manuais, reporta bugs e auxilia na automação básica"
+            },
+            {
+                nome: "QA Engineer Pleno",
+                habilidades: ["automated testing", "selenium", "cypress", "jest", "ci/cd", "performance testing", "security testing", "test strategy", "api testing"],
+                salarioBR: 9200,
+                salarioUS: 95000,
+                experiencia: "Pleno",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Desenvolve e mantém frameworks de teste automatizado e estratégias de qualidade"
+            },
+            {
+                nome: "QA Engineer Senior",
+                habilidades: ["test architecture", "team leadership", "mentoring", "quality strategy", "devops", "test automation", "performance", "security"],
+                salarioBR: 15950,
+                salarioUS: 137500,
+                experiencia: "Senior",
+                demandaBR: "Alta",
+                demandaUS: "Alta",
+                scoreBR: 3,
+                scoreUS: 3,
+                descricao: "Lidera estratégia de qualidade, arquitetura de testes e equipes de QA"
+            },
+            
+            // 🎮 GAME DEVELOPER
+            {
+                nome: "Game Developer Junior",
+                habilidades: ["unity", "c#", "game physics básica", "git", "3d modeling básico", "game design básico", "scripting"],
+                salarioBR: 6750,
+                salarioUS: 82500,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Desenvolve mecânicas de jogo básicas e auxilia em projetos com supervisão"
+            },
+            {
+                nome: "Game Developer Pleno",
+                habilidades: ["unity", "unreal engine", "c#", "c++", "game physics", "multiplayer", "networking", "optimization", "game design"],
+                salarioBR: 10000,
+                salarioUS: 105000,
+                experiencia: "Pleno",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Desenvolve sistemas complexos de jogo, otimização e funcionalidades multiplayer"
+            },
+            {
+                nome: "Game Developer Senior",
+                habilidades: ["engine customization", "performance optimization", "team leadership", "architecture", "game design", "publishing", "platform expertise"],
+                salarioBR: 19350,
+                salarioUS: 156750,
+                experiencia: "Senior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Lidera desenvolvimento de jogos, otimização de engine e arquitetura de jogos"
+            },
+            
+            // 🕶️ AR/VR DEVELOPER
+            {
+                nome: "AR/VR Developer Pleno",
+                habilidades: ["unity", "unreal engine", "c#", "3d modeling", "spatial computing", "ar/vr sdk", "performance optimization", "ux para realidade virtual"],
+                salarioBR: 14000,
+                salarioUS: 130000,
+                experiencia: "Pleno",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Desenvolve experiências de realidade aumentada e virtual imersivas"
+            },
+            {
+                nome: "AR/VR Developer Senior",
+                habilidades: ["ar/vr architecture", "spatial computing", "team leadership", "research", "innovation", "hardware integration", "performance optimization"],
+                salarioBR: 26950,
+                salarioUS: 195000,
+                experiencia: "Senior",
+                demandaBR: "Moderada",
+                demandaUS: "Alta",
+                scoreBR: 1,
+                scoreUS: 3,
+                descricao: "Lidera desenvolvimento de AR/VR, pesquisa e inovação em realidade estendida"
+            },
+            
+            // 🌐 IOT DEVELOPER
+            {
+                nome: "IoT Developer Junior",
+                habilidades: ["python", "c/c++", "embedded systems", "raspberry pi", "arduino", "mqtt", "sensor networks", "basic electronics"],
+                salarioBR: 7650,
+                salarioUS: 92250,
+                experiencia: "Junior",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Desenvolve soluções básicas de IoT e conectividade de dispositivos"
+            },
+            {
+                nome: "IoT Developer Pleno",
+                habilidades: ["embedded systems", "python", "c/c++", "mqtt", "coap", "iot protocols", "cloud integration", "security", "edge computing"],
+                salarioBR: 12000,
+                salarioUS: 115000,
+                experiencia: "Pleno",
+                demandaBR: "Moderada",
+                demandaUS: "Moderada",
+                scoreBR: 1,
+                scoreUS: 1,
+                descricao: "Projeta e implementa soluções de IoT escaláveis com foco em segurança e cloud"
+            },
+            {
+                nome: "IoT Developer Senior",
+                habilidades: ["iot architecture", "edge computing", "team leadership", "security", "scalability", "hardware/software integration", "innovation"],
+                salarioBR: 22000,
+                salarioUS: 176000,
+                experiencia: "Senior",
+                demandaBR: "Moderada",
+                demandaUS: "Alta",
+                scoreBR: 1,
+                scoreUS: 3,
+                descricao: "Arquiteta soluções de IoT em escala, lidera inovação e integração hardware/software"
+            },
+            
+            // 📢 DEVELOPER ADVOCATE
+            {
+                nome: "Developer Advocate Pleno",
+                habilidades: ["public speaking", "technical writing", "content creation", "community building", "social media", "apis", "documentation", "developer experience"],
+                salarioBR: 14000,
+                salarioUS: 120000,
+                experiencia: "Pleno",
+                demandaBR: "Moderada",
+                demandaUS: "Alta",
+                scoreBR: 1,
+                scoreUS: 3,
+                descricao: "Cria conteúdo técnico, engaja comunidades e melhora experiência de desenvolvedores"
+            },
+            {
+                nome: "Developer Advocate Senior",
+                habilidades: ["community strategy", "developer relations", "team leadership", "conference speaking", "content strategy", "partnerships", "metrics"],
+                salarioBR: 24750,
+                salarioUS: 181500,
+                experiencia: "Senior",
+                demandaBR: "Moderada",
+                demandaUS: "Alta",
+                scoreBR: 1,
+                scoreUS: 3,
+                descricao: "Lidera estratégia de relações com desenvolvedores, comunidades e parcerias"
+            }
+        ];
+
+        // ====================================================
+        // HABILIDADES PRIORITÁRIAS E SINÔNIMOS
+        // ====================================================
+        const habilidadesPrioritarias = {
+            "python": { peso: 4, descricao: "Linguagem essencial para dados, backend e automação" },
+            "javascript": { peso: 4, descricao: "Base para desenvolvimento web frontend e backend" },
+            "sql": { peso: 3, descricao: "Fundamental para qualquer cargo que trabalhe com dados" },
+            "aws": { peso: 4, descricao: "Cloud mais popular com alta demanda no mercado" },
+            "docker": { peso: 3, descricao: "Conteinerização padrão da indústria" },
+            "kubernetes": { peso: 4, descricao: "Orquestração essencial para aplicações modernas" },
+            "react": { peso: 4, descricao: "Framework frontend mais demandado do mercado" },
+            "machine learning": { peso: 4, descricao: "Habilidade mais valorizada em data science" },
+            "security": { peso: 4, descricao: "Habilidade crítica com demanda crescente" },
+            "terraform": { peso: 3, descricao: "Infrastructure as Code essencial para DevOps" },
+            "typescript": { peso: 3, descricao: "JavaScript tipado, cada vez mais requisitado" }
+        };
+
+        const sinonimosHabilidades = {
+            "nist": ["security", "compliance", "governance", "framework"],
+            "iso 27001": ["security", "compliance", "governance", "certification"],
+            "gdpr": ["privacy", "compliance", "legal", "regulation"],
+            "compliance": ["governance", "regulation", "security", "audit"],
+            "risk assessment": ["security", "analysis", "governance", "management"],
+            "network security": ["security", "networking", "firewall", "ids/ips"],
+            "cloud security": ["security", "aws", "azure", "gcp", "cloud"],
+            "siem": ["security", "monitoring", "soc", "logs"],
+            "soc": ["security", "operations", "monitoring", "incident response"],
+            "incident response": ["security", "soc", "forensics", "emergency"],
+            "pentest": ["security", "ethical hacking", "vulnerability", "testing"],
+            "ethical hacking": ["security", "pentest", "penetration testing", "hacking"]
+        };
+
+        // ====================================================
+        // VARIÁVEIS GLOBAIS
+        // ====================================================
+        let nivelSelecionado = "Junior";
+        let resultadosAtuais = [];
+        let compatibilityChart, salaryChart;
+        let chartType1 = 'bar', chartType2 = 'bar';
+
+        // ====================================================
+        // INICIALIZAÇÃO
+        // ====================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleção de nível de experiência
+            document.querySelectorAll('.level-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.level-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    nivelSelecionado = this.getAttribute('data-level');
+                });
+            });
+
+            // Botão de análise
+            document.getElementById('analyzeBtn').addEventListener('click', realizarAnalise);
+
+            // Exemplos rápidos
+            document.querySelectorAll('.example-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const example = this.getAttribute('data-example');
+                    carregarExemplo(example);
+                });
+            });
+
+            // Filtros
+            document.getElementById('sortBy').addEventListener('change', ordenarResultados);
+            document.getElementById('filterExp').addEventListener('change', filtrarResultados);
+
+            // Listeners para mudança de tipo de gráfico
+            document.getElementById('chartType1').addEventListener('change', function() {
+                chartType1 = this.value;
+                if (resultadosAtuais.length > 0) {
+                    atualizarGraficoCompatibilidade();
+                }
+            });
+
+            document.getElementById('chartType2').addEventListener('change', function() {
+                chartType2 = this.value;
+                if (resultadosAtuais.length > 0) {
+                    atualizarGraficoSalarial();
+                }
+            });
+
+            // Inicializar gráficos vazios
+            inicializarGraficos();
+            
+            // Realizar análise inicial com dados padrão
+            setTimeout(realizarAnalise, 500);
+        });
+
+        // ====================================================
+        // FUNÇÃO PRINCIPAL DE ANÁLISE
+        // ====================================================
+        function realizarAnalise() {
+            // Mostrar loading
+            document.getElementById('loadingResults').classList.add('active');
+            document.getElementById('resultsContainer').innerHTML = '';
+            
+            // Obter dados do formulário
+            const skillsInput = document.getElementById('skills').value;
+            const location = document.getElementById('location').value;
+            
+            // Processar habilidades do usuário
+            const habilidadesUsuarioBrutas = skillsInput
+                .toLowerCase()
+                .split(',')
+                .map(skill => skill.trim())
+                .filter(skill => skill.length > 0);
+            
+            // Expandir habilidades com sinônimos
+            const habilidadesUsuario = [...habilidadesUsuarioBrutas];
+            habilidadesUsuarioBrutas.forEach(habilidade => {
+                if (sinonimosHabilidades[habilidade]) {
+                    sinonimosHabilidades[habilidade].forEach(sinonimo => {
+                        if (!habilidadesUsuario.includes(sinonimo)) {
+                            habilidadesUsuario.push(sinonimo);
+                        }
+                    });
+                }
+            });
+            
+            // Calcular compatibilidade para cada cargo
+            resultadosAtuais = cargos.map(cargo => {
+                // Expandir habilidades do cargo também
+                const habilidadesCargoExpandidas = [...cargo.habilidades];
+                cargo.habilidades.forEach(habilidade => {
+                    if (sinonimosHabilidades[habilidade]) {
+                        sinonimosHabilidades[habilidade].forEach(sinonimo => {
+                            if (!habilidadesCargoExpandidas.includes(sinonimo)) {
+                                habilidadesCargoExpandidas.push(sinonimo);
+                            }
+                        });
+                    }
+                });
+                
+                // Calcular habilidades comuns (considerando expansões)
+                const habilidadesComuns = habilidadesCargoExpandidas.filter(habilidade => 
+                    habilidadesUsuario.includes(habilidade.toLowerCase())
+                );
+                
+                // Calcular habilidades faltantes
+                const habilidadesFaltantes = cargo.habilidades.filter(habilidade => 
+                    !habilidadesUsuarioBrutas.includes(habilidade.toLowerCase())
+                );
+                
+                // Priorizar habilidades faltantes
+                const habilidadesFaltantesPriorizadas = habilidadesFaltantes.map(habilidade => {
+                    const prioridadeInfo = habilidadesPrioritarias[habilidade] || { peso: 1, descricao: "Habilidade importante para o cargo" };
+                    return {
+                        nome: habilidade,
+                        prioridade: prioridadeInfo.peso,
+                        descricao: prioridadeInfo.descricao
+                    };
+                }).sort((a, b) => b.prioridade - a.prioridade);
+                
+                // Calcular porcentagem de compatibilidade
+                const compatibilidadeBase = (habilidadesComuns.length / habilidadesCargoExpandidas.length) * 100;
+                
+                // Ajuste por nível de experiência
+                let ajusteExperiencia = 0;
+                if (cargo.experiencia === nivelSelecionado) {
+                    ajusteExperiencia = 25;
+                } else if (
+                    (nivelSelecionado === "Senior" && cargo.experiencia === "Pleno") ||
+                    (nivelSelecionado === "Pleno" && cargo.experiencia === "Junior")
+                ) {
+                    ajusteExperiencia = 15;
+                } else if (
+                    (nivelSelecionado === "Senior" && cargo.experiencia === "Junior")
+                ) {
+                    ajusteExperiencia = 5;
+                }
+                
+                // Verificar se há experiência mínima exigida
+                if (cargo.experienciaMinima && nivelSelecionado === "Junior" && cargo.experienciaMinima !== "Junior") {
+                    ajusteExperiencia -= 20; // Penalidade para júnior em cargo que exige experiência mínima
+                }
+                
+                // Ajuste por demanda (usando score do país selecionado)
+                const scoreDemanda = location === "Brasil" ? cargo.scoreBR : cargo.scoreUS;
+                const ajusteDemanda = (scoreDemanda - 1) * 8; // 0, 8, 16, 24 pontos
+                
+                // Compatibilidade total
+                let compatibilidadeTotal = compatibilidadeBase + ajusteExperiencia + ajusteDemanda;
+                compatibilidadeTotal = Math.min(compatibilidadeTotal, 100);
+                compatibilidadeTotal = Math.max(compatibilidadeTotal, 0);
+                
+                // Determinar salário baseado na localização
+                const salario = location === "Brasil" ? cargo.salarioBR : cargo.salarioUS;
+                const moeda = location === "Brasil" ? "R$" : "US$";
+                const demanda = location === "Brasil" ? cargo.demandaBR : cargo.demandaUS;
+                const score = location === "Brasil" ? cargo.scoreBR : cargo.scoreUS;
+                
+                return {
+                    ...cargo,
+                    compatibilidade: Math.round(compatibilidadeTotal),
+                    habilidadesComuns: habilidadesComuns.length,
+                    habilidadesComunsLista: habilidadesComuns,
+                    habilidadesFaltantes: habilidadesFaltantesPriorizadas,
+                    salarioExibicao: `${moeda} ${salario.toLocaleString()}`,
+                    salarioNumerico: salario,
+                    moeda: moeda,
+                    demandaAtual: demanda,
+                    scoreAtual: score,
+                    habilidadesTotaisCargo: habilidadesCargoExpandidas.length
+                };
+            });
+            
+            // Ordenar por compatibilidade
+            resultadosAtuais.sort((a, b) => b.compatibilidade - a.compatibilidade);
+            
+            // Atualizar estatísticas no header
+            atualizarEstatisticas();
+            
+            // Simular tempo de processamento
+            setTimeout(() => {
+                // Renderizar resultados
+                renderizarResultados();
+                
+                // Atualizar gráficos
+                atualizarGraficoCompatibilidade();
+                atualizarGraficoSalarial();
+                
+                // Gerar plano de ação
+                gerarPlanoAcao();
+                
+                // Esconder loading
+                document.getElementById('loadingResults').classList.remove('active');
+            }, 800);
+        }
+
+        // ====================================================
+        // RENDERIZAR RESULTADOS NA TELA
+        // ====================================================
+        function renderizarResultados() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            // Pegar apenas os top 6 resultados
+            const resultadosExibir = resultadosAtuais.slice(0, 6);
+            
+            resultadosExibir.forEach((cargo, index) => {
+                const card = document.createElement('div');
+                card.className = `result-card ${index === 0 ? 'highlight' : ''}`;
+                
+                // Classificar compatibilidade
+                let compatibilidadeClass = '';
+                if (cargo.compatibilidade >= 80) compatibilidadeClass = 'text-success';
+                else if (cargo.compatibilidade >= 60) compatibilidadeClass = 'text-warning';
+                else compatibilidadeClass = 'text-danger';
+                
+                // Determinar cor da demanda
+                let demandaClass = '';
+                let demandaIcon = 'fas fa-chart-line';
+                let demandaColor = '';
+                
+                switch(cargo.demandaAtual) {
+                    case 'Muito Alta':
+                        demandaClass = 'demanda-muito-alta';
+                        demandaIcon = 'fas fa-fire';
+                        demandaColor = 'var(--demanda-muito-alta)';
+                        break;
+                    case 'Alta':
+                        demandaClass = 'demanda-alta';
+                        demandaIcon = 'fas fa-chart-line';
+                        demandaColor = 'var(--demanda-alta)';
+                        break;
+                    case 'Média':
+                        demandaClass = 'demanda-media';
+                        demandaIcon = 'fas fa-chart-bar';
+                        demandaColor = 'var(--demanda-media)';
+                        break;
+                    case 'Moderada':
+                        demandaClass = 'demanda-moderada';
+                        demandaIcon = 'fas fa-chart-area';
+                        demandaColor = 'var(--demanda-moderada)';
+                        break;
+                }
+                
+                // Determinar cor baseada na área
+                let areaColor = 'var(--primary)';
+                let areaIcon = 'fas fa-code';
+                
+                if (cargo.nome.toLowerCase().includes('security') || 
+                    cargo.nome.toLowerCase().includes('soc') ||
+                    cargo.nome.toLowerCase().includes('grc') ||
+                    cargo.nome.toLowerCase().includes('pentest') ||
+                    cargo.nome.toLowerCase().includes('ciso')) {
+                    areaColor = 'var(--danger)';
+                    areaIcon = 'fas fa-shield-alt';
+                } else if (cargo.nome.toLowerCase().includes('data') ||
+                          cargo.nome.toLowerCase().includes('analyst') ||
+                          cargo.nome.toLowerCase().includes('scientist') ||
+                          cargo.nome.toLowerCase().includes('ml')) {
+                    areaColor = 'var(--success)';
+                    areaIcon = 'fas fa-chart-bar';
+                } else if (cargo.nome.toLowerCase().includes('devops') ||
+                          cargo.nome.toLowerCase().includes('cloud') ||
+                          cargo.nome.toLowerCase().includes('sre')) {
+                    areaColor = 'var(--warning)';
+                    areaIcon = 'fas fa-cloud';
+                } else if (cargo.nome.toLowerCase().includes('frontend') ||
+                          cargo.nome.toLowerCase().includes('designer') ||
+                          cargo.nome.toLowerCase().includes('ui/ux')) {
+                    areaColor = '#9d4edd';
+                    areaIcon = 'fas fa-palette';
+                } else if (cargo.nome.toLowerCase().includes('product') ||
+                          cargo.nome.toLowerCase().includes('manager') ||
+                          cargo.nome.toLowerCase().includes('lead') ||
+                          cargo.nome.toLowerCase().includes('architect')) {
+                    areaColor = '#ff6d00';
+                    areaIcon = 'fas fa-briefcase';
+                } else if (cargo.nome.toLowerCase().includes('game') ||
+                          cargo.nome.toLowerCase().includes('ar') ||
+                          cargo.nome.toLowerCase().includes('vr') ||
+                          cargo.nome.toLowerCase().includes('iot')) {
+                    areaColor = '#06d6a0';
+                    areaIcon = 'fas fa-gamepad';
+                } else if (cargo.nome.toLowerCase().includes('qa') ||
+                          cargo.nome.toLowerCase().includes('tester')) {
+                    areaColor = '#118ab2';
+                    areaIcon = 'fas fa-vial';
+                } else if (cargo.nome.toLowerCase().includes('advocate')) {
+                    areaColor = '#ef476f';
+                    areaIcon = 'fas fa-bullhorn';
+                }
+                
+                // Tooltip para demanda
+                const location = document.getElementById('location').value;
+                const tooltipDemanda = location === "Brasil" 
+                    ? `📊 Demanda no Mercado:<br>• Brasil: ${cargo.demandaBR} (${cargo.scoreBR}/4)<br>• EUA: ${cargo.demandaUS} (${cargo.scoreUS}/4)<br><br>🇧🇷 ${getDescricaoDemanda(cargo.demandaBR)}<br>🇺🇸 ${getDescricaoDemanda(cargo.demandaUS)}`
+                    : `📊 Demanda no Mercado:<br>• Brasil: ${cargo.demandaBR} (${cargo.scoreBR}/4)<br>• EUA: ${cargo.demandaUS} (${cargo.scoreUS}/4)<br><br>🇧🇷 ${getDescricaoDemanda(cargo.demandaBR)}<br>🇺🇸 ${getDescricaoDemanda(cargo.demandaUS)}`;
+                
+                // Tooltip para salário (em português)
+                const tooltipSalario = cargo.moeda === "R$" 
+                    ? `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• CLT: valor base mostrado<br>• PJ: pode ser +20% a +40%<br>Os valores podem variar conforme empresa e localização.`
+                    : `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• Salário base mostrado<br>• Contrato: pode ser +20% a +40%<br>Valores reais variam por empresa e localização.`;
+                
+                card.innerHTML = `
+                    <div class="result-rank">${index + 1}</div>
+                    <h3 class="result-title">
+                        <i class="${areaIcon}" style="color: ${areaColor}; margin-right: 8px;"></i>
+                        ${cargo.nome}
+                    </h3>
+                    <div class="result-compatibility ${compatibilidadeClass}">
+                        <i class="fas fa-chart-line"></i> ${cargo.compatibilidade}% de compatibilidade
+                    </div>
+                    
+                    <div class="result-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span class="salary-tooltip">
+                                ${cargo.salarioExibicao}
+                                <span class="tooltip-text">${tooltipSalario}</span>
+                            </span>
+                        </div>
+                        <div class="stat-badge">
+                            <i class="fas fa-user-tie"></i>
+                            <span>${cargo.experiencia}</span>
+                        </div>
+                        <div class="demanda-info" style="cursor: help;" title="${tooltipDemanda}">
+                            <i class="${demandaIcon}" style="color: ${demandaColor};"></i>
+                            <span class="demanda-badge ${demandaClass}">${cargo.demandaAtual}</span>
+                            <span style="color: ${demandaColor}; font-weight: 600;">${cargo.scoreAtual}/4</span>
+                        </div>
+                    </div>
+                    
+                    <p class="result-description">${cargo.descricao}</p>
+                    
+                    <div class="result-skills">
+                        ${cargo.habilidadesComunsLista.slice(0, 4).map(skill => 
+                            `<span class="skill-tag" style="background: ${areaColor}20; color: ${areaColor};">${skill}</span>`
+                        ).join('')}
+                        ${cargo.habilidadesComuns < 4 ? 
+                            Array(4 - cargo.habilidadesComunsLista.slice(0, 4).length).fill(0).map(() => 
+                                `<span class="skill-tag" style="background: #f0f0f0; color: #666; opacity: 0.5;">...</span>`
+                            ).join('') : ''
+                        }
+                        ${cargo.habilidadesComuns < cargo.habilidadesTotaisCargo ? 
+                            `<span class="skill-tag" style="background: #f0f0f0; color: #666;">
+                                +${cargo.habilidadesTotaisCargo - cargo.habilidadesComuns} habilidades para aprender
+                            </span>` : 
+                            ''
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // ====================================================
+        // ATUALIZAR ESTATÍSTICAS
+        // ====================================================
+        function atualizarEstatisticas() {
+            // Salário médio dos cargos filtrados por nível selecionado
+            const cargosFiltrados = cargos.filter(cargo => cargo.experiencia === nivelSelecionado);
+            const location = document.getElementById('location').value;
+            
+            let salarioTotal = 0;
+            if (location === "Brasil") {
+                salarioTotal = cargosFiltrados.reduce((sum, cargo) => sum + cargo.salarioBR, 0);
+            } else {
+                salarioTotal = cargosFiltrados.reduce((sum, cargo) => sum + cargo.salarioUS, 0);
+            }
+            
+            const salarioMedio = cargosFiltrados.length > 0 ? salarioTotal / cargosFiltrados.length : 0;
+            const moeda = location === "Brasil" ? "R$" : "US$";
+            
+            // Porcentagem de alta demanda (score >= 3)
+            const altaDemanda = cargos.filter(cargo => {
+                const score = location === "Brasil" ? cargo.scoreBR : cargo.scoreUS;
+                return score >= 3;
+            }).length;
+            
+            const porcentagemAltaDemanda = Math.round((altaDemanda / cargos.length) * 100);
+            
+            // Atualizar elementos
+            document.getElementById('totalJobs').textContent = cargos.length; // 81 cargos
+            document.getElementById('avgSalary').textContent = `${moeda} ${Math.round(salarioMedio).toLocaleString()}`;
+            document.getElementById('highDemand').textContent = `${porcentagemAltaDemanda}%`;
+        }
+
+        // ====================================================
+        // FUNÇÃO AUXILIAR PARA DESCRIÇÃO DA DEMANDA
+        // ====================================================
+        function getDescricaoDemanda(demanda) {
+            switch(demanda) {
+                case 'Muito Alta':
+                    return 'Muitas vagas + crescimento acelerado + déficit de profissionais';
+                case 'Alta':
+                    return 'Muitas vagas estáveis + contratação constante';
+                case 'Média':
+                    return 'Vagas recorrentes, mas com equilíbrio oferta × demanda';
+                case 'Moderada':
+                    return 'Poucas vagas, nicho, contratação pontual ou sazonal';
+                default:
+                    return 'Demanda não especificada';
+            }
+        }
+
+        // ====================================================
+        // GRÁFICOS
+        // ====================================================
+        function inicializarGraficos() {
+            const ctx1 = document.getElementById('compatibilityChart').getContext('2d');
+            const ctx2 = document.getElementById('salaryChart').getContext('2d');
+            
+            compatibilityChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Compatibilidade (%)',
+                        data: [],
+                        backgroundColor: '#4361ee',
+                        borderColor: '#3a0ca3',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            salaryChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Salário',
+                        data: [],
+                        backgroundColor: '#f72585',
+                        borderColor: '#b5179e',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoCompatibilidade() {
+            // Destruir gráfico existente se houver
+            if (compatibilityChart) {
+                compatibilityChart.destroy();
+            }
+            
+            // Pegar top 5 cargos
+            const top5 = resultadosAtuais.slice(0, 5);
+            
+            const ctx = document.getElementById('compatibilityChart').getContext('2d');
+            
+            let chartConfig = {
+                type: chartType1,
+                data: {
+                    labels: top5.map(cargo => cargo.nome.split(' ').slice(0, 2).join(' ')),
+                    datasets: [{
+                        label: 'Compatibilidade (%)',
+                        data: top5.map(cargo => cargo.compatibilidade),
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y || context.parsed.r}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Configurar cores baseadas no tipo de gráfico
+            if (chartType1 === 'bar') {
+                chartConfig.data.datasets[0].backgroundColor = top5.map(cargo => {
+                    if (cargo.nome.toLowerCase().includes('security')) return '#e63946';
+                    if (cargo.nome.toLowerCase().includes('data')) return '#4cc9f0';
+                    if (cargo.nome.toLowerCase().includes('devops') || cargo.nome.toLowerCase().includes('cloud')) return '#f8961e';
+                    if (cargo.nome.toLowerCase().includes('frontend')) return '#9d4edd';
+                    return '#4361ee';
+                });
+                chartConfig.data.datasets[0].borderColor = top5.map(cargo => {
+                    if (cargo.nome.toLowerCase().includes('security')) return '#c1121f';
+                    if (cargo.nome.toLowerCase().includes('data')) return '#2a9d8f';
+                    if (cargo.nome.toLowerCase().includes('devops') || cargo.nome.toLowerCase().includes('cloud')) return '#e76f51';
+                    if (cargo.nome.toLowerCase().includes('frontend')) return '#7b2cbf';
+                    return '#3a0ca3';
+                });
+                chartConfig.options.scales = {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                };
+            } else if (chartType1 === 'radar') {
+                chartConfig.data.datasets[0].backgroundColor = 'rgba(67, 97, 238, 0.2)';
+                chartConfig.data.datasets[0].borderColor = '#4361ee';
+                chartConfig.data.datasets[0].pointBackgroundColor = '#4361ee';
+                chartConfig.options.scales = {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                };
+            } else if (chartType1 === 'polarArea') {
+                chartConfig.data.datasets[0].backgroundColor = [
+                    '#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0'
+                ];
+                chartConfig.data.datasets[0].borderColor = 'white';
+                chartConfig.data.datasets[0].borderWidth = 2;
+                chartConfig.options.scales = {
+                    r: {
+                        ticks: {
+                            display: false
+                        }
+                    }
+                };
+            }
+            
+            compatibilityChart = new Chart(ctx, chartConfig);
+        }
+
+        function atualizarGraficoSalarial() {
+            // Destruir gráfico existente se houver
+            if (salaryChart) {
+                salaryChart.destroy();
+            }
+            
+            // Pegar top 5 cargos
+            const top5 = resultadosAtuais.slice(0, 5);
+            
+            const ctx = document.getElementById('salaryChart').getContext('2d');
+            const location = document.getElementById('location').value;
+            const moeda = location === "Brasil" ? "R$" : "US$";
+            
+            let chartConfig = {
+                type: chartType2,
+                data: {
+                    labels: top5.map(cargo => cargo.nome.split(' ').slice(0, 2).join(' ')),
+                    datasets: [{
+                        label: `Salário (${moeda})`,
+                        data: top5.map(cargo => cargo.salarioNumerico),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${moeda} ${context.parsed.y || context.parsed.r?.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Configurar cores baseadas no tipo de gráfico
+            if (chartType2 === 'bar') {
+                chartConfig.data.datasets[0].backgroundColor = top5.map(cargo => {
+                    if (cargo.nome.toLowerCase().includes('security')) return '#e63946';
+                    if (cargo.nome.toLowerCase().includes('data')) return '#4cc9f0';
+                    if (cargo.nome.toLowerCase().includes('devops') || cargo.nome.toLowerCase().includes('cloud')) return '#f8961e';
+                    if (cargo.nome.toLowerCase().includes('frontend')) return '#9d4edd';
+                    return '#f72585';
+                });
+                chartConfig.data.datasets[0].borderColor = top5.map(cargo => {
+                    if (cargo.nome.toLowerCase().includes('security')) return '#c1121f';
+                    if (cargo.nome.toLowerCase().includes('data')) return '#2a9d8f';
+                    if (cargo.nome.toLowerCase().includes('devops') || cargo.nome.toLowerCase().includes('cloud')) return '#e76f51';
+                    if (cargo.nome.toLowerCase().includes('frontend')) return '#7b2cbf';
+                    return '#b5179e';
+                });
+                chartConfig.options.scales = {
+                    y: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return moeda + ' ' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                };
+            } else if (chartType2 === 'pie' || chartType2 === 'doughnut') {
+                chartConfig.data.datasets[0].backgroundColor = [
+                    '#f72585', '#b5179e', '#7209b7', '#3a0ca3', '#4361ee'
+                ];
+                chartConfig.data.datasets[0].borderColor = 'white';
+                chartConfig.data.datasets[0].borderWidth = 2;
+                chartConfig.options.plugins.legend.display = true;
+            }
+            
+            salaryChart = new Chart(ctx, chartConfig);
+        }
+
+        // ====================================================
+        // PLANO DE AÇÃO
+        // ====================================================
+        function gerarPlanoAcao() {
+            const actionPlan = document.getElementById('actionPlan');
+            const topCargo = resultadosAtuais[0];
+            
+            if (!topCargo) {
+                actionPlan.innerHTML = `
+                    <p style="color: var(--gray); text-align: center; padding: 30px;">
+                        Execute a análise para ver seu plano de ação personalizado
+                    </p>
+                `;
+                return;
+            }
+            
+            // Determinar nível de compatibilidade
+            let nivelCompatibilidade = '';
+            let corCompatibilidade = '';
+            
+            if (topCargo.compatibilidade >= 80) {
+                nivelCompatibilidade = 'EXCELENTE';
+                corCompatibilidade = 'var(--success)';
+            } else if (topCargo.compatibilidade >= 60) {
+                nivelCompatibilidade = 'BOA';
+                corCompatibilidade = 'var(--warning)';
+            } else {
+                nivelCompatibilidade = 'MODERADA';
+                corCompatibilidade = 'var(--danger)';
+            }
+            
+            // Determinar cor da demanda
+            let demandaClass = '';
+            let demandaIcon = 'fas fa-chart-line';
+            let demandaColor = '';
+            
+            switch(topCargo.demandaAtual) {
+                case 'Muito Alta':
+                    demandaClass = 'demanda-muito-alta';
+                    demandaIcon = 'fas fa-fire';
+                    demandaColor = 'var(--demanda-muito-alta)';
+                    break;
+                case 'Alta':
+                    demandaClass = 'demanda-alta';
+                    demandaIcon = 'fas fa-chart-line';
+                    demandaColor = 'var(--demanda-alta)';
+                    break;
+                case 'Média':
+                    demandaClass = 'demanda-media';
+                    demandaIcon = 'fas fa-chart-bar';
+                    demandaColor = 'var(--demanda-media)';
+                    break;
+                case 'Moderada':
+                    demandaClass = 'demanda-moderada';
+                    demandaIcon = 'fas fa-chart-area';
+                    demandaColor = 'var(--demanda-moderada)';
+                    break;
+            }
+            
+            // Tooltip para salário (em português)
+            const tooltipSalario = topCargo.moeda === "R$" 
+                ? `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• CLT: valor base mostrado<br>• PJ: pode ser +20% a +40%<br>Os valores podem variar conforme empresa e localização.`
+                : `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• Salário base mostrado<br>• Contrato: pode ser +20% a +40%<br>Valores reais variam por empresa e localização.`;
+            
+            // Gerar HTML do plano de ação
+            let planoHTML = `
+                <div class="action-plan-container">
+                    <div class="focus-card">
+                        <h3><i class="fas fa-bullseye"></i> Foco Principal</h3>
+                        <div style="margin-bottom: 15px;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary);">
+                                ${topCargo.nome}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                                <div style="padding: 6px 12px; background: ${corCompatibilidade}; color: white; border-radius: 20px; font-weight: 600; font-size: 14px;">
+                                    ${nivelCompatibilidade}
+                                </div>
+                                <div style="font-size: 16px; font-weight: 600; color: ${corCompatibilidade};">
+                                    ${topCargo.compatibilidade}% de compatibilidade
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <div style="font-size: 14px; color: var(--gray); margin-bottom: 10px;">
+                                <i class="fas fa-info-circle"></i> Sobre esta carreira:
+                            </div>
+                            <p style="color: var(--dark); font-size: 14px; line-height: 1.5;">
+                                ${topCargo.descricao}
+                            </p>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="color: var(--gray); font-size: 14px;">Salário Médio:</span>
+                                <span style="font-weight: 600; color: var(--primary);" class="salary-tooltip">
+                                    ${topCargo.salarioExibicao}
+                                    <span class="tooltip-text">${tooltipSalario}</span>
+                                </span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="color: var(--gray); font-size: 14px;">Demanda no Mercado:</span>
+                                <div class="demanda-info" style="cursor: help;" title="${getDescricaoDemanda(topCargo.demandaAtual)}">
+                                    <i class="${demandaIcon}" style="color: ${demandaColor};"></i>
+                                    <span class="demanda-badge ${demandaClass}">${topCargo.demandaAtual}</span>
+                                    <span style="color: ${demandaColor}; font-weight: 600;">${topCargo.scoreAtual}/4</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--gray); font-size: 14px;">Nível de Experiência:</span>
+                                <span style="font-weight: 600; color: var(--primary);">${topCargo.experiencia}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="skills-card">
+                        <h3><i class="fas fa-code"></i> Análise de Habilidades</h3>
+                        <div class="skills-grid">
+                            <div class="current-skills">
+                                <h4 style="color: var(--success); font-size: 16px; margin-bottom: 15px;">
+                                    <i class="fas fa-check-circle"></i> Habilidades Atuais
+                                    <span style="font-size: 12px; color: var(--gray); margin-left: 5px;">
+                                        (${topCargo.habilidadesComuns}/${topCargo.habilidadesTotaisCargo})
+                                    </span>
+                                </h4>
+                                <ul class="skills-list">
+                                    ${topCargo.habilidadesComunsLista.slice(0, 5).map(skill => `
+                                        <li>
+                                            ${skill}
+                                            <span style="color: var(--success); font-size: 12px;">
+                                                <i class="fas fa-check"></i> Dominada
+                                            </span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="to-learn-skills">
+                                <h4 style="color: var(--warning); font-size: 16px; margin-bottom: 15px;">
+                                    <i class="fas fa-book"></i> Habilidades para Desenvolver
+                                    <span style="font-size: 12px; color: var(--gray); margin-left: 5px;">
+                                        (${topCargo.habilidadesFaltantes.length})
+                                    </span>
+                                </h4>
+                                <ul class="skills-list">
+                                    ${topCargo.habilidadesFaltantes.slice(0, 5).map((skill, index) => {
+                                        let prioridadeClass = '';
+                                        let prioridadeText = '';
+                                        
+                                        if (skill.prioridade >= 4) {
+                                            prioridadeClass = 'priority-high';
+                                            prioridadeText = 'Alta';
+                                        } else if (skill.prioridade >= 3) {
+                                            prioridadeClass = 'priority-medium';
+                                            prioridadeText = 'Média';
+                                        } else {
+                                            prioridadeClass = 'priority-low';
+                                            prioridadeText = 'Baixa';
+                                        }
+                                        
+                                        return `
+                                            <li>
+                                                <div>
+                                                    <div style="font-weight: 600;">${skill.nome}</div>
+                                                    <div style="font-size: 12px; color: var(--gray); margin-top: 3px;">${skill.descricao}</div>
+                                                </div>
+                                                <span class="skill-priority ${prioridadeClass}">${prioridadeText}</span>
+                                            </li>
+                                        `;
+                                    }).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="next-steps-card">
+                        <h3><i class="fas fa-road"></i> Próximos Passos</h3>
+                        <div class="steps-timeline">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <h4>Focar nas Habilidades Prioritárias</h4>
+                                <p>Desenvolva primeiro as habilidades marcadas como "Alta Prioridade". Estas são essenciais para o cargo.</p>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <h4>Buscar Capacitação</h4>
+                                <p>Encontre cursos, certificações e tutoriais focados nas habilidades que você precisa desenvolver.</p>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <h4>Projetos Práticos</h4>
+                                <p>Crie um portfólio com projetos reais que demonstrem suas habilidades para empregadores.</p>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">4</div>
+                                <h4>Networking</h4>
+                                <p>Conecte-se com profissionais da área no LinkedIn e participe de comunidades relevantes.</p>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <h4>Preparar para Vagas</h4>
+                                <p>Atualize seu currículo, LinkedIn e prepare-se para entrevistas técnicas e comportamentais.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            actionPlan.innerHTML = planoHTML;
+        }
+
+        // ====================================================
+        // FUNÇÕES AUXILIARES
+        // ====================================================
+        function carregarExemplo(tipo) {
+            let habilidades = '';
+            
+            switch(tipo) {
+                case 'cybersecurity':
+                    habilidades = 'linux, python, network security, siem, soc, incident response, firewall, compliance';
+                    break;
+                case 'data-science':
+                    habilidades = 'python, sql, machine learning, estatística, pandas, numpy, scikit-learn, jupyter';
+                    break;
+                case 'frontend':
+                    habilidades = 'javascript, react, css, html, typescript, redux, webpack, sass';
+                    break;
+                case 'devops':
+                    habilidades = 'docker, kubernetes, aws, linux, terraform, ci/cd, python, bash';
+                    break;
+            }
+            
+            document.getElementById('skills').value = habilidades;
+            
+            // Realizar análise automaticamente após 1 segundo
+            setTimeout(realizarAnalise, 1000);
+        }
+
+        function ordenarResultados() {
+            const criterio = document.getElementById('sortBy').value;
+            
+            if (criterio === 'salary') {
+                resultadosAtuais.sort((a, b) => b.salarioNumerico - a.salarioNumerico);
+            } else if (criterio === 'demand') {
+                resultadosAtuais.sort((a, b) => b.scoreAtual - a.scoreAtual);
+            } else {
+                resultadosAtuais.sort((a, b) => b.compatibilidade - a.compatibilidade);
+            }
+            
+            renderizarResultados();
+            atualizarGraficoCompatibilidade();
+            atualizarGraficoSalarial();
+            gerarPlanoAcao();
+        }
+
+        function filtrarResultados() {
+            const filtro = document.getElementById('filterExp').value;
+            
+            if (filtro === 'all') {
+                renderizarResultados();
+            } else {
+                const resultadosFiltrados = resultadosAtuais.filter(cargo => cargo.experiencia === filtro);
+                renderizarResultadosFiltrados(resultadosFiltrados);
+            }
+        }
+
+        function renderizarResultadosFiltrados(resultados) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            resultados.slice(0, 6).forEach((cargo, index) => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                
+                let compatibilidadeClass = '';
+                if (cargo.compatibilidade >= 80) compatibilidadeClass = 'text-success';
+                else if (cargo.compatibilidade >= 60) compatibilidadeClass = 'text-warning';
+                else compatibilidadeClass = 'text-danger';
+                
+                // Determinar cor da demanda
+                let demandaClass = '';
+                let demandaIcon = 'fas fa-chart-line';
+                let demandaColor = '';
+                
+                switch(cargo.demandaAtual) {
+                    case 'Muito Alta':
+                        demandaClass = 'demanda-muito-alta';
+                        demandaIcon = 'fas fa-fire';
+                        demandaColor = 'var(--demanda-muito-alta)';
+                        break;
+                    case 'Alta':
+                        demandaClass = 'demanda-alta';
+                        demandaIcon = 'fas fa-chart-line';
+                        demandaColor = 'var(--demanda-alta)';
+                        break;
+                    case 'Média':
+                        demandaClass = 'demanda-media';
+                        demandaIcon = 'fas fa-chart-bar';
+                        demandaColor = 'var(--demanda-media)';
+                        break;
+                    case 'Moderada':
+                        demandaClass = 'demanda-moderada';
+                        demandaIcon = 'fas fa-chart-area';
+                        demandaColor = 'var(--demanda-moderada)';
+                        break;
+                }
+                
+                // Tooltip para salário (em português)
+                const tooltipSalario = cargo.moeda === "R$" 
+                    ? `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• CLT: valor base mostrado<br>• PJ: pode ser +20% a +40%<br>Os valores podem variar conforme empresa e localização.`
+                    : `💰 Média de mercado 2025<br>Faixa típica para este nível:<br>• Salário base mostrado<br>• Contrato: pode ser +20% a +40%<br>Valores reais variam por empresa e localização.`;
+                
+                // Tooltip para demanda
+                const location = document.getElementById('location').value;
+                const tooltipDemanda = location === "Brasil" 
+                    ? `📊 Demanda no Mercado:<br>• Brasil: ${cargo.demandaBR} (${cargo.scoreBR}/4)<br>• EUA: ${cargo.demandaUS} (${cargo.scoreUS}/4)`
+                    : `📊 Demanda no Mercado:<br>• Brasil: ${cargo.demandaBR} (${cargo.scoreBR}/4)<br>• EUA: ${cargo.demandaUS} (${cargo.scoreUS}/4)`;
+                
+                card.innerHTML = `
+                    <div class="result-rank">${index + 1}</div>
+                    <h3 class="result-title">${cargo.nome}</h3>
+                    <div class="result-compatibility ${compatibilidadeClass}">
+                        <i class="fas fa-chart-line"></i> ${cargo.compatibilidade}% de compatibilidade
+                    </div>
+                    
+                    <div class="result-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span class="salary-tooltip">
+                                ${cargo.salarioExibicao}
+                                <span class="tooltip-text">${tooltipSalario}</span>
+                            </span>
+                        </div>
+                        <div class="stat-badge">
+                            <i class="fas fa-user-tie"></i>
+                            <span>${cargo.experiencia}</span>
+                        </div>
+                        <div class="demanda-info" style="cursor: help;" title="${tooltipDemanda}">
+                            <i class="${demandaIcon}" style="color: ${demandaColor};"></i>
+                            <span class="demanda-badge ${demandaClass}">${cargo.demandaAtual}</span>
+                            <span style="color: ${demandaColor}; font-weight: 600;">${cargo.scoreAtual}/4</span>
+                        </div>
+                    </div>
+                    
+                    <p class="result-description">${cargo.descricao}</p>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            if (resultados.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--gray);">
+                        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <h3>Nenhum cargo encontrado</h3>
+                        <p>Não há cargos com o nível de experiência selecionado. Tente outro filtro.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
